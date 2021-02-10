@@ -7,13 +7,19 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 import { AuthProvider } from './Contexts/AuthContext';
+import { UsersProvider } from './Contexts/UsersContext';
+import { OrdersProvider } from './Contexts/OrdersContext';
 
 ReactDOM.render(
   <AuthProvider>
-    <BrowserRouter>
-      <ToastContainer />
-      <App />
-    </BrowserRouter>
+    <UsersProvider>
+      <OrdersProvider>
+        <BrowserRouter>
+          <ToastContainer />
+          <App />
+        </BrowserRouter>
+      </OrdersProvider>
+    </UsersProvider>
   </AuthProvider>,
   document.getElementById('root')
 );
