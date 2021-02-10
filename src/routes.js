@@ -1,3 +1,4 @@
+/* eslint-disable linebreak-style */
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import DashboardLayout from 'src/layouts/DashboardLayout';
@@ -10,6 +11,12 @@ import NotFoundView from 'src/views/errors/NotFoundView';
 import ProductListView from 'src/views/product/ProductListView';
 import RegisterView from 'src/views/auth/RegisterView';
 import SettingsView from 'src/views/settings/SettingsView';
+import Price from './Price';
+import Orders from './Orders';
+import APIKeys from './APIKeys';
+import Printers from './views/Users/Printers';
+import Users from './views/Users/Users';
+import Logout from './Logout';
 
 const routes = [
   {
@@ -21,6 +28,13 @@ const routes = [
       { path: 'dashboard', element: <DashboardView /> },
       { path: 'products', element: <ProductListView /> },
       { path: 'settings', element: <SettingsView /> },
+
+      { path: 'price', element: <Price /> },
+      { path: 'users', element: <Users /> },
+      { path: 'printers', element: <Printers /> },
+      { path: 'orders', element: <Orders /> },
+      { path: 'apikeys', element: <APIKeys /> },
+      { path: 'logout', element: <Logout /> },
       { path: '*', element: <Navigate to="/404" /> }
     ]
   },
