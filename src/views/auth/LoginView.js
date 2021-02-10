@@ -1,7 +1,10 @@
-import React from 'react';
+import React, { useState, useContext } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
+import axios from 'axios';
 import { Formik } from 'formik';
+import { withRouter } from 'react-router';
+
 import {
   Box,
   Button,
@@ -16,7 +19,11 @@ import FacebookIcon from 'src/icons/Facebook';
 import GoogleIcon from 'src/icons/Google';
 import Page from 'src/components/Page';
 
-const useStyles = makeStyles((theme) => ({
+import { AuthContext } from '../../Contexts/AuthContext';
+import { API_BASE_URL } from '../../utils/API_URLS';
+import { toast } from 'react-toastify';
+
+const useStyles = makeStyles(theme => ({
   root: {
     backgroundColor: theme.palette.background.dark,
     height: '100%',
@@ -29,11 +36,22 @@ const LoginView = () => {
   const classes = useStyles();
   const navigate = useNavigate();
 
+  const { user, setUser } = useContext(AuthContext);
+
+  const [state, setState] = useState({
+    email: '',
+    password: ''
+  });
+
+  const handleInputChange = e => {
+    setState({
+      ...state,
+      [e.target.name]: e.target.value
+    });
+  };
+
   return (
-    <Page
-      className={classes.root}
-      title="Login"
-    >
+    <Page className={classes.root} title="Login">
       <Box
         display="flex"
         flexDirection="column"
@@ -47,11 +65,68 @@ const LoginView = () => {
               password: 'Password123'
             }}
             validationSchema={Yup.object().shape({
-              email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
-              password: Yup.string().max(255).required('Password is required')
+              email: Yup.string()
+                .email('Must be a valid email')
+                .max(255)
+                .required('Email is required'),
+              password: Yup.string()
+                .max(255)
+                .required('Password is required')
             })}
-            onSubmit={() => {
-              navigate('/app/dashboard', { replace: true });
+            onSubmit={async () => {
+              try {
+                const res = await axios.post(`${API_BASE_URL}/users/login`, {
+                  user: {
+                    email: state.email,
+                    password: state.password
+                  }
+                });
+
+                console.log('res', res);
+
+                if (res.data.role === 'admin') {
+                  // * Set User On Context
+                  setUser({
+                    access_token: res.data.access_token,
+                    email: res.data.email,
+                    name: res.data.name,
+                    _id: res.data.userId
+                  });
+
+                  toast.success('Login Successfull ! Redirecting', {
+                    position: 'top-right',
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined
+                  });
+
+                  window.location.href = '/app';
+                } else {
+                  toast.error('You are NOT Admin', {
+                    position: 'top-right',
+                    autoClose: 5000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined
+                  });
+                }
+              } catch (err) {
+                toast.error('You are NOT Admin', {
+                  position: 'top-right',
+                  autoClose: 5000,
+                  hideProgressBar: false,
+                  closeOnClick: true,
+                  pauseOnHover: true,
+                  draggable: true,
+                  progress: undefined
+                });
+                console.log('err', err);
+              }
             }}
           >
             {({
@@ -65,68 +140,11 @@ const LoginView = () => {
             }) => (
               <form onSubmit={handleSubmit}>
                 <Box mb={3}>
-                  <Typography
-                    color="textPrimary"
-                    variant="h2"
-                  >
+                  <Typography color="textPrimary" variant="h2">
                     Sign in
                   </Typography>
-                  <Typography
-                    color="textSecondary"
-                    gutterBottom
-                    variant="body2"
-                  >
-                    Sign in on the internal platform
-                  </Typography>
                 </Box>
-                <Grid
-                  container
-                  spacing={3}
-                >
-                  <Grid
-                    item
-                    xs={12}
-                    md={6}
-                  >
-                    <Button
-                      color="primary"
-                      fullWidth
-                      startIcon={<FacebookIcon />}
-                      onClick={handleSubmit}
-                      size="large"
-                      variant="contained"
-                    >
-                      Login with Facebook
-                    </Button>
-                  </Grid>
-                  <Grid
-                    item
-                    xs={12}
-                    md={6}
-                  >
-                    <Button
-                      fullWidth
-                      startIcon={<GoogleIcon />}
-                      onClick={handleSubmit}
-                      size="large"
-                      variant="contained"
-                    >
-                      Login with Google
-                    </Button>
-                  </Grid>
-                </Grid>
-                <Box
-                  mt={3}
-                  mb={1}
-                >
-                  <Typography
-                    align="center"
-                    color="textSecondary"
-                    variant="body1"
-                  >
-                    or login with email address
-                  </Typography>
-                </Box>
+
                 <TextField
                   error={Boolean(touched.email && errors.email)}
                   fullWidth
@@ -135,9 +153,9 @@ const LoginView = () => {
                   margin="normal"
                   name="email"
                   onBlur={handleBlur}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                   type="email"
-                  value={values.email}
+                  value={state.email}
                   variant="outlined"
                 />
                 <TextField
@@ -148,9 +166,9 @@ const LoginView = () => {
                   margin="normal"
                   name="password"
                   onBlur={handleBlur}
-                  onChange={handleChange}
+                  onChange={handleInputChange}
                   type="password"
-                  value={values.password}
+                  value={state.password}
                   variant="outlined"
                 />
                 <Box my={2}>
@@ -165,20 +183,6 @@ const LoginView = () => {
                     Sign in now
                   </Button>
                 </Box>
-                <Typography
-                  color="textSecondary"
-                  variant="body1"
-                >
-                  Don&apos;t have an account?
-                  {' '}
-                  <Link
-                    component={RouterLink}
-                    to="/register"
-                    variant="h6"
-                  >
-                    Sign up
-                  </Link>
-                </Typography>
               </form>
             )}
           </Formik>
