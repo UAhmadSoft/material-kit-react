@@ -1,4 +1,3 @@
-import { initial } from 'lodash';
 import React, { createContext, useState, useEffect } from 'react';
 // import { withRouter } from 'react-router';
 import axios from 'axios';
@@ -16,6 +15,8 @@ const OrdersProvider = props => {
     fetchOrders();
   }, []);
 
+  const assignOrder = () => {};
+
   const fetchOrders = () => {
     (async () => {
       const res = await axios.get(`${API_BASE_URL}/orders/getAllOrders`);
@@ -28,7 +29,7 @@ const OrdersProvider = props => {
   };
 
   return (
-    <OrdersContext.Provider value={{ ordersObj }}>
+    <OrdersContext.Provider value={{ ordersObj, assignOrder }}>
       {props.children}
     </OrdersContext.Provider>
   );
